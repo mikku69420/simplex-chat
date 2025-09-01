@@ -18,10 +18,9 @@ jobs:
           curl --proto '=https' \
                --tlsv1.2 \
                -sSf -L \
-               'https://api.github.com/repos/simplex-chat/simplex-chat/releases/latest' \
+               'https://api.github.com/repos/mikku69420/simplex-chat/releases/latest' \
                2>/dev/null | \
-          grep -i "tag_name" | \
-          awk -F \" '{print "TAG="$4}' >> $GITHUB_ENV
+          awk -F \" '{print "TAG=PTT"}' >> $GITHUB_ENV
 
       - name: Execute reproduce script
         run: |
