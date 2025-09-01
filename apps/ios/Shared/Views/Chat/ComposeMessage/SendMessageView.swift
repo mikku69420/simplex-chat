@@ -31,6 +31,7 @@ struct SendMessageView: View {
     var finishVoiceMessageRecording: (() -> Void)? = nil
     var allowVoiceMessagesToContact: (() -> Void)? = nil
     var timedMessageAllowed: Bool = false
+    var pushToTalkMode: Bool = false
     var onMediaAdded: ([UploadContent]) -> Void
     @State private var holdingVMR = false
     @Namespace var namespace
@@ -53,6 +54,15 @@ struct SendMessageView: View {
                 Text("Voice message…")
                     .font(teFont.italic())
                     .multilineTextAlignment(.leading)
+                    .foregroundColor(theme.colors.secondary)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 8)
+                    .padding(.trailing, 32)
+                    .frame(maxWidth: .infinity)
+            } else if pushToTalkMode {
+                Text(NSLocalizedString("Tap microphone to record", comment: "placeholder text in push-to-talk mode"))
+                    .font(teFont)
+                    .multilineTextAlignment(.center)
                     .foregroundColor(theme.colors.secondary)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 8)
@@ -108,7 +118,7 @@ struct SendMessageView: View {
         } else if case .reportedItem = composeState.contextItem {
             sendMessageButton()
         } else if showVoiceMessageButton
-            && composeState.message.isEmpty
+            && (composeState.message.isEmpty || pushToTalkMode)
             && !composeState.editing
             && !composeState.forwarding
             && composeState.liveMessage == nil

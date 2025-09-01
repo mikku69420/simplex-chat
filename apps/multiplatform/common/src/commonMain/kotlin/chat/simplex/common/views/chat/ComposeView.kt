@@ -1272,6 +1272,12 @@ fun ComposeView(
     sendToConnect: (() -> Unit)? = null
   ) {
     val timedMessageAllowed = remember(chat.chatInfo) { chat.chatInfo.featureEnabled(ChatFeature.TimedMessages) }
+    val pushToTalkMode = remember(chat.chatInfo) {
+      when (val info = chat.chatInfo) {
+        is ChatInfo.Group -> info.groupInfo.fullGroupPreferences.pushToTalk.enable == GroupFeatureEnabled.ON
+        else -> false
+      }
+    }
     val sendButtonColor =
       if (chat.chatInfo.incognito)
         if (isInDarkTheme()) Indigo else Indigo.copy(alpha = 0.7F)
@@ -1295,6 +1301,7 @@ fun ComposeView(
       timedMessageAllowed = timedMessageAllowed,
       customDisappearingMessageTimePref = chatModel.controller.appPrefs.customDisappearingMessageTime,
       placeholder = placeholder ?: composeState.value.placeholder,
+      pushToTalkMode = pushToTalkMode,
       sendMessage = { ttl ->
         sendMessage(ttl)
         resetLinkPreview()

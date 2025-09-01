@@ -680,6 +680,7 @@ struct ComposeView: View {
     }
 
     private func sendMessageView(_ disableSendButton: Bool, placeholder: String? = nil, sendToConnect: (() -> Void)? = nil) -> some View {
+        let pushToTalkMode = chat.chatInfo.groupInfo?.fullGroupPreferences.pushToTalk?.enable == .on
         ZStack(alignment: .leading) {
             SendMessageView(
                 placeholder: placeholder,
@@ -708,6 +709,7 @@ struct ComposeView: View {
                 finishVoiceMessageRecording: finishVoiceMessageRecording,
                 allowVoiceMessagesToContact: allowVoiceMessagesToContact,
                 timedMessageAllowed: chat.chatInfo.featureEnabled(.timedMessages),
+                pushToTalkMode: pushToTalkMode,
                 onMediaAdded: { media in if !media.isEmpty { chosenMedia = media }},
                 keyboardVisible: $keyboardVisible,
                 keyboardHiddenDate: $keyboardHiddenDate,

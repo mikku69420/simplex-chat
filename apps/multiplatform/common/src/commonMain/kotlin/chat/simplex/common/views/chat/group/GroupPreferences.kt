@@ -161,6 +161,11 @@ private fun GroupPreferencesLayout(
     FeatureSection(GroupFeature.History, enableHistory, null, groupInfo, preferences, onTTLUpdated) { enable, _ ->
       applyPrefs(preferences.copy(history = GroupPreference(enable = enable)))
     }
+    SectionDividerSpaced(true, maxBottomPadding = false)
+    val enablePushToTalk = remember(preferences) { mutableStateOf(preferences.pushToTalk.enable) }
+    FeatureSection(GroupFeature.PushToTalk, enablePushToTalk, null, groupInfo, preferences, onTTLUpdated) { enable, _ ->
+      applyPrefs(preferences.copy(pushToTalk = GroupPreference(enable = enable)))
+    }
     if (groupInfo.isOwner) {
       SectionDividerSpaced(maxTopPadding = true, maxBottomPadding = false)
       ResetSaveButtons(

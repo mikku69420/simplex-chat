@@ -24,3 +24,9 @@
 
 /* No comment provided by engineer. */
 "No group!" = "Group not found!";
+
+/* Push to talk feature */
+"Push to Talk" = "Push to Talk";
+
+/* Push to talk placeholder */
+"Tap microphone to record" = "Tap microphone to record";

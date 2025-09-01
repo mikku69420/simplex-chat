@@ -25,6 +25,7 @@ struct AddGroupView: View {
     @State private var showInvalidNameAlert = false
     @State private var groupLink: GroupLink?
     @State private var groupLinkMemberRole: GroupMemberRole = .member
+    @State private var pushToTalk = false
 
     var body: some View {
         if let chat = chat, let groupInfo = groupInfo {
@@ -97,6 +98,8 @@ struct AddGroupView: View {
                 }
                 .disabled(!canCreateProfile())
                 IncognitoToggle(incognitoEnabled: $incognitoDefault)
+                Toggle(NSLocalizedString("Push to Talk", comment: "group creation toggle for push-to-talk interface mode"), isOn: $pushToTalk)
+                    .toggleStyle(SwitchToggleStyle(tint: theme.colors.primary))
             } footer: {
                 VStack(alignment: .leading, spacing: 4) {
                     sharedGroupProfileInfo(incognitoDefault)
@@ -186,7 +189,10 @@ struct AddGroupView: View {
         focusDisplayName = false
         do {
             profile.displayName = profile.displayName.trimmingCharacters(in: .whitespaces)
-            profile.groupPreferences = GroupPreferences(history: GroupPreference(enable: .on))
+            profile.groupPreferences = GroupPreferences(
+                history: GroupPreference(enable: .on),
+                pushToTalk: GroupPreference(enable: pushToTalk ? .on : .off)
+            )
             let gInfo = try apiNewGroup(incognito: incognitoDefault, groupProfile: profile)
             Task {
                 await m.loadGroupMembers(gInfo)

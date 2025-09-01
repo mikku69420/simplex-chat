@@ -82,6 +82,7 @@ fun AddGroupLayout(
   val profileImage = rememberSaveable { mutableStateOf<String?>(null) }
   val focusRequester = remember { FocusRequester() }
   val incognito = remember { mutableStateOf(incognitoPref.get()) }
+  val pushToTalk = rememberSaveable { mutableStateOf(false) }
 
     ModalBottomSheetLayout(
       scrimColor = Color.Black.copy(alpha = 0.12F),
@@ -142,7 +143,10 @@ fun AddGroupLayout(
                 fullName = "",
                 shortDescr = null,
                 image = profileImage.value,
-                groupPreferences = GroupPreferences(history = GroupPreference(GroupFeatureEnabled.ON))
+                groupPreferences = GroupPreferences(
+                  history = GroupPreference(GroupFeatureEnabled.ON),
+                  pushToTalk = GroupPreference(if (pushToTalk.value) GroupFeatureEnabled.ON else GroupFeatureEnabled.OFF)
+                )
               ))
             },
             textColor = MaterialTheme.colors.primary,
@@ -151,6 +155,14 @@ fun AddGroupLayout(
           )
 
           IncognitoToggle(incognitoPref, incognito) { ModalManager.start.showModal { IncognitoView() } }
+          
+          PreferenceToggle(
+            title = stringResource(MR.strings.push_to_talk),
+            isChecked = pushToTalk.value,
+            icon = painterResource(MR.images.ic_mic),
+          ) {
+            pushToTalk.value = !pushToTalk.value
+          }
 
           SectionTextFooter(
             buildAnnotatedString {

@@ -51,6 +51,7 @@ fun SendMsgView(
   timedMessageAllowed: Boolean = false,
   customDisappearingMessageTimePref: SharedPreference<Int>? = null,
   placeholder: String,
+  pushToTalkMode: Boolean = false,
   sendMessage: (Int?) -> Unit,
   sendLiveMessage: (suspend () -> Unit)? = null,
   updateLiveMessage: (suspend () -> Unit)? = null,
@@ -65,34 +66,61 @@ fun SendMsgView(
   val padding = if (appPlatform.isAndroid) PaddingValues(vertical = 8.dp) else PaddingValues(top = 3.dp, bottom = 4.dp)
   Box(Modifier.padding(padding)) {
     val cs = composeState.value
-    val showVoiceButton = !nextConnect && cs.message.text.isEmpty() && showVoiceRecordIcon && !composeState.value.editing &&
+    val showVoiceButton = if (pushToTalkMode) {
+      // In push-to-talk mode, always show voice button when conditions allow
+      !nextConnect && showVoiceRecordIcon && !composeState.value.editing &&
         !composeState.value.forwarding && cs.liveMessage == null && (cs.preview is ComposePreview.NoPreview || recState.value is RecordingState.Started) && (cs.contextItem !is ComposeContextItem.ReportedItem)
+    } else {
+      // Normal mode: show voice button only when text is empty
+      !nextConnect && cs.message.text.isEmpty() && showVoiceRecordIcon && !composeState.value.editing &&
+        !composeState.value.forwarding && cs.liveMessage == null && (cs.preview is ComposePreview.NoPreview || recState.value is RecordingState.Started) && (cs.contextItem !is ComposeContextItem.ReportedItem)
+    }
     val showDeleteTextButton = rememberSaveable { mutableStateOf(false) }
     val sendMsgButtonDisabled = !sendMsgEnabled || !cs.sendEnabled() ||
       (!allowedVoiceByPrefs && cs.preview is ComposePreview.VoicePreview) ||
         cs.endLiveDisabled ||
         !sendButtonEnabled
     val clicksOnTextFieldDisabled = !sendMsgEnabled || cs.preview is ComposePreview.VoicePreview || cs.inProgress
-    PlatformTextField(
-      composeState,
-      sendMsgEnabled,
-      disabledText = userCantSendReason?.first,
-      sendMsgButtonDisabled,
-      textStyle,
-      showDeleteTextButton,
-      if (clicksOnTextFieldDisabled) "" else placeholder,
-      showVoiceButton,
-      onMessageChange,
-      editPrevMessage,
-      onFilesPasted,
-      focusRequester
-    ) {
-      if (!cs.inProgress) {
-        if (sendToConnect != null) {
-          sendToConnect()
-        } else {
-          sendMessage(null)
+    
+    if (!pushToTalkMode) {
+      // Normal mode: show text input
+      PlatformTextField(
+        composeState,
+        sendMsgEnabled,
+        disabledText = userCantSendReason?.first,
+        sendMsgButtonDisabled,
+        textStyle,
+        showDeleteTextButton,
+        if (clicksOnTextFieldDisabled) "" else placeholder,
+        showVoiceButton,
+        onMessageChange,
+        editPrevMessage,
+        onFilesPasted,
+        focusRequester
+      ) {
+        if (!cs.inProgress) {
+          if (sendToConnect != null) {
+            sendToConnect()
+          } else {
+            sendMessage(null)
+          }
         }
+      }
+    } else {
+      // Push-to-talk mode: show placeholder for voice button alignment
+      Box(
+        Modifier
+          .fillMaxWidth()
+          .height(56.dp)
+          .background(MaterialTheme.colors.surface, RoundedCornerShape(28.dp))
+          .border(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f), RoundedCornerShape(28.dp)),
+        contentAlignment = Alignment.Center
+      ) {
+        Text(
+          text = generalGetString(MR.strings.tap_microphone_to_record),
+          color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
+          style = MaterialTheme.typography.body1
+        )
       }
     }
     if (clicksOnTextFieldDisabled) {
@@ -133,32 +161,67 @@ fun SendMsgView(
           SendMsgButton(painterResource(MR.images.ic_check_filled), sendButtonSize, sendButtonAlpha, sendButtonColor, !sendMsgButtonDisabled, sendToConnect, sendMessage)
         }
         showVoiceButton && sendMsgEnabled -> {
-          Row(verticalAlignment = Alignment.CenterVertically) {
-            val stopRecOnNextClick = remember { mutableStateOf(false) }
-            when {
-              needToAllowVoiceToContact || !allowedVoiceByPrefs -> {
-                DisallowedVoiceButton {
-                  if (needToAllowVoiceToContact) {
-                    showNeedToAllowVoiceAlert(allowVoiceToContact)
-                  } else {
-                    showDisabledVoiceAlert(isDirectChat)
+          if (pushToTalkMode) {
+            // Push-to-talk mode: larger centered voice button
+            Box(
+              modifier = Modifier
+                .fillMaxWidth()
+                .padding(end = if (appPlatform.isAndroid) 8.dp else 12.dp),
+              contentAlignment = Alignment.CenterEnd
+            ) {
+              val stopRecOnNextClick = remember { mutableStateOf(false) }
+              when {
+                needToAllowVoiceToContact || !allowedVoiceByPrefs -> {
+                  Box(Modifier.size(64.dp)) {
+                    DisallowedVoiceButton {
+                      if (needToAllowVoiceToContact) {
+                        showNeedToAllowVoiceAlert(allowVoiceToContact)
+                      } else {
+                        showDisabledVoiceAlert(isDirectChat)
+                      }
+                    }
                   }
                 }
+                !allowedToRecordVoiceByPlatform() ->
+                  Box(Modifier.size(64.dp)) {
+                    VoiceButtonWithoutPermissionByPlatform()
+                  }
+                else ->
+                  Box(Modifier.size(64.dp)) {
+                    RecordVoiceView(recState, stopRecOnNextClick)
+                  }
               }
-              !allowedToRecordVoiceByPlatform() ->
-                VoiceButtonWithoutPermissionByPlatform()
-              else ->
-                RecordVoiceView(recState, stopRecOnNextClick)
             }
-            if (sendLiveMessage != null
-              && updateLiveMessage != null
-              && (cs.preview !is ComposePreview.VoicePreview || !stopRecOnNextClick.value)
-              && cs.contextItem is ComposeContextItem.NoContextItem
-            ) {
-              Spacer(Modifier.width(12.dp))
-              StartLiveMessageButton {
-                if (composeState.value.preview is ComposePreview.NoPreview) {
-                  startLiveMessage(scope, sendLiveMessage, updateLiveMessage, sendButtonSize, sendButtonAlpha, composeState, liveMessageAlertShown)
+          } else {
+            // Normal mode: standard voice button
+            Row(verticalAlignment = Alignment.CenterVertically) {
+              val stopRecOnNextClick = remember { mutableStateOf(false) }
+              when {
+                needToAllowVoiceToContact || !allowedVoiceByPrefs -> {
+                  DisallowedVoiceButton {
+                    if (needToAllowVoiceToContact) {
+                      showNeedToAllowVoiceAlert(allowVoiceToContact)
+                    } else {
+                      showDisabledVoiceAlert(isDirectChat)
+                    }
+                  }
+                }
+                !allowedToRecordVoiceByPlatform() ->
+                  VoiceButtonWithoutPermissionByPlatform()
+                else ->
+                  RecordVoiceView(recState, stopRecOnNextClick)
+              }
+              
+              if (sendLiveMessage != null
+                && updateLiveMessage != null
+                && (cs.preview !is ComposePreview.VoicePreview || !stopRecOnNextClick.value)
+                && cs.contextItem is ComposeContextItem.NoContextItem
+              ) {
+                Spacer(Modifier.width(12.dp))
+                StartLiveMessageButton {
+                  if (composeState.value.preview is ComposePreview.NoPreview) {
+                    startLiveMessage(scope, sendLiveMessage, updateLiveMessage, sendButtonSize, sendButtonAlpha, composeState, liveMessageAlertShown)
+                  }
                 }
               }
             }

@@ -5512,7 +5512,8 @@ enum class GroupFeature: Feature {
   @SerialName("files") Files,
   @SerialName("simplexLinks") SimplexLinks,
   @SerialName("reports") Reports,
-  @SerialName("history") History;
+  @SerialName("history") History,
+  @SerialName("pushToTalk") PushToTalk;
 
   override val hasParam: Boolean get() = when(this) {
     TimedMessages -> true
@@ -5530,6 +5531,7 @@ enum class GroupFeature: Feature {
       SimplexLinks -> true
       Reports -> false
       History -> false
+      PushToTalk -> false
     }
 
   override val text: String
@@ -5543,6 +5545,7 @@ enum class GroupFeature: Feature {
       SimplexLinks -> generalGetString(MR.strings.simplex_links)
       Reports -> generalGetString(MR.strings.group_reports_member_reports)
       History -> generalGetString(MR.strings.recent_history)
+      PushToTalk -> generalGetString(MR.strings.push_to_talk)
     }
 
   val icon: Painter
@@ -5556,6 +5559,7 @@ enum class GroupFeature: Feature {
       SimplexLinks -> painterResource(MR.images.ic_link)
       Reports -> painterResource(MR.images.ic_flag)
       History -> painterResource(MR.images.ic_schedule)
+      PushToTalk -> painterResource(MR.images.ic_mic)
     }
 
   @Composable
@@ -5569,6 +5573,7 @@ enum class GroupFeature: Feature {
     SimplexLinks -> painterResource(MR.images.ic_link)
     Reports -> painterResource(MR.images.ic_flag_filled)
     History -> painterResource(MR.images.ic_schedule_filled)
+    PushToTalk -> painterResource(MR.images.ic_mic_filled)
   }
 
   fun enableDescription(enabled: GroupFeatureEnabled, canEdit: Boolean): String =
@@ -5610,6 +5615,10 @@ enum class GroupFeature: Feature {
           GroupFeatureEnabled.ON -> generalGetString(MR.strings.enable_sending_recent_history)
           GroupFeatureEnabled.OFF -> generalGetString(MR.strings.disable_sending_recent_history)
         }
+        PushToTalk -> when(enabled) {
+          GroupFeatureEnabled.ON -> generalGetString(MR.strings.enable_push_to_talk)
+          GroupFeatureEnabled.OFF -> generalGetString(MR.strings.disable_push_to_talk)
+        }
       }
     } else {
       when(this) {
@@ -5648,6 +5657,10 @@ enum class GroupFeature: Feature {
         History -> when(enabled) {
           GroupFeatureEnabled.ON -> generalGetString(MR.strings.recent_history_is_sent_to_new_members)
           GroupFeatureEnabled.OFF -> generalGetString(MR.strings.recent_history_is_not_sent_to_new_members)
+        }
+        PushToTalk -> when(enabled) {
+          GroupFeatureEnabled.ON -> generalGetString(MR.strings.group_uses_push_to_talk_interface)
+          GroupFeatureEnabled.OFF -> generalGetString(MR.strings.group_uses_standard_text_input)
         }
       }
     }
@@ -5774,6 +5787,7 @@ data class FullGroupPreferences(
   val simplexLinks: RoleGroupPreference,
   val reports: GroupPreference,
   val history: GroupPreference,
+  val pushToTalk: GroupPreference,
   val commands: List<ChatBotCommand>,
 ) {
   fun toGroupPreferences(): GroupPreferences =
@@ -5787,6 +5801,7 @@ data class FullGroupPreferences(
       simplexLinks = simplexLinks,
       reports = reports,
       history = history,
+      pushToTalk = pushToTalk,
       commands = commands,
     )
 
@@ -5801,6 +5816,7 @@ data class FullGroupPreferences(
       simplexLinks = RoleGroupPreference(GroupFeatureEnabled.ON, role = null),
       reports = GroupPreference(GroupFeatureEnabled.ON),
       history = GroupPreference(GroupFeatureEnabled.ON),
+      pushToTalk = GroupPreference(GroupFeatureEnabled.OFF),
       commands = listOf()
     )
   }
@@ -5817,6 +5833,7 @@ data class GroupPreferences(
   val simplexLinks: RoleGroupPreference? = null,
   val reports: GroupPreference? = null,
   val history: GroupPreference? = null,
+  val pushToTalk: GroupPreference? = null,
   val commands: List<ChatBotCommand>? = null
 ) {
   companion object {
@@ -5830,6 +5847,7 @@ data class GroupPreferences(
       simplexLinks = RoleGroupPreference(GroupFeatureEnabled.ON, role = null),
       reports = GroupPreference(GroupFeatureEnabled.ON),
       history = GroupPreference(GroupFeatureEnabled.ON),
+      pushToTalk = GroupPreference(GroupFeatureEnabled.OFF),
       commands = null,
     )
   }

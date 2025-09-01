@@ -2144,6 +2144,8 @@
   <string name="full_deletion">Delete for everyone</string>
   <string name="message_reactions">Message reactions</string>
   <string name="voice_messages">Voice messages</string>
+  <string name="push_to_talk">Push to talk</string>
+  <string name="tap_microphone_to_record">Tap microphone to record</string>
   <string name="files_and_media">Files and media</string>
   <string name="simplex_links">SimpleX links</string>
   <string name="recent_history">Visible history</string>
@@ -2207,6 +2209,8 @@
   <string name="prohibit_message_deletion">Prohibit irreversible message deletion.</string>
   <string name="allow_to_send_voice">Allow to send voice messages.</string>
   <string name="prohibit_sending_voice">Prohibit sending voice messages.</string>
+  <string name="enable_push_to_talk">Enable push-to-talk interface.</string>
+  <string name="disable_push_to_talk">Use standard text input.</string>
   <string name="allow_message_reactions">Allow message reactions.</string>
   <string name="prohibit_message_reactions_group">Prohibit messages reactions.</string>
   <string name="allow_to_send_files">Allow to send files and media.</string>
@@ -2227,6 +2231,8 @@
   <string name="message_deletion_prohibited_in_chat">Irreversible message deletion is prohibited.</string>
   <string name="group_members_can_send_voice">Members can send voice messages.</string>
   <string name="voice_messages_are_prohibited">Voice messages are prohibited.</string>
+  <string name="group_uses_push_to_talk_interface">Group uses push-to-talk interface.</string>
+  <string name="group_uses_standard_text_input">Group uses standard text input.</string>
   <string name="group_members_can_add_message_reactions">Members can add message reactions.</string>
   <string name="message_reactions_are_prohibited">Message reactions are prohibited.</string>
   <string name="group_members_can_send_files">Members can send files and media.</string>
