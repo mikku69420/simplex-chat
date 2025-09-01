@@ -9,7 +9,7 @@ init_dir="$PWD"
 ghc='9.6.3'
 
 repo_name="simplex-chat"
-repo="https://github.com/simplex-chat/${repo_name}"
+repo="https://github.com/mikku69420/${repo_name}"
 
 image_name='sx-local'
 container_name='sx-builder'
